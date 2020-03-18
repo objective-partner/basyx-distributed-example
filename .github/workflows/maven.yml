@@ -25,6 +25,6 @@ jobs:
         server-password: MAVEN_REPO_PASS
     - name: Build with Maven
       env:
-        MAVEN_REPO_USER: maven-github-access
+        MAVEN_REPO_USER: github-maven-access
         MAVEN_REPO_PASS: ${{ secrets.MAVEN_OP_REPOSITORY_PASS }}
       run: mvn -B install
