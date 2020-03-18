@@ -1,0 +1,35 @@
+version: '3'
+services:
+
+  directory:
+    image: basyx-distributed-example/basyx-distributed-example-directory-vab:latest
+    environment: 
+      - VAB_DIRECTORY_PORT=8081
+    ports:
+      - 127.0.0.1:8081:8081
+  oven: 
+    image: basyx-distributed-example/basyx-distributed-example-oven:latest
+    environment: 
+      - VAB_DIRECTORY_PORT=8081
+      - PORT=4050
+    depends_on: 
+      - directory
+  oven-control: 
+    image: basyx-distributed-example/basyx-distributed-example-oven-control:latest
+    environment: 
+      - VAB_DIRECTORY_PORT=8081
+      - PORT=4050
+    depends_on: 
+      - directory
+      - oven
+  oven-aas:
+    image: basyx-distributed-example/basyx-distributed-example-oven-aas:latest
+    environment: 
+      - VAB_DIRECTORY_PORT=8081
+      - PORT=8080
+    ports:
+      - 127.0.0.1:8080:8080
+    depends_on: 
+      - directory
+      - oven
+      - oven-control
