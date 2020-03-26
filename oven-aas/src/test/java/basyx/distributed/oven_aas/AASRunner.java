@@ -41,7 +41,7 @@ public class AASRunner {
 
   public static void main(String[] args) throws Exception {
     // Return a AASHTTPRegistryProxy for the registry on localhost at port 4000
-    IAASRegistryService registry = new AASRegistryProxy("http://localhost:4050/handson/registry/api/v1/registry/");
+    IAASRegistryService registry = new AASRegistryProxy("http://localhost:8080/handson/registry/api/v1/registry/");
 
     // Create a ConnectedAssetAdministrationShell using a
     // ConnectedAssetAdministrationShellManager
@@ -58,6 +58,12 @@ public class AASRunner {
     // Either Create a connected property using the connected facades
     Map<String, ISubModel> submodels = connectedAAS.getSubModels();
 
+    
+    ISubModel xmlConverterSM = submodels.get("XmlExporter");
+    IOperation aasToXmlOperation = xmlConverterSM.getOperations().get("aasToXml");
+    Object result = aasToXmlOperation.invoke(aasURN.toString());
+    LOGGER.debug("AasToXml-Result: " + result);
+    
 
     ISubModel connectedControlSM = submodels.get("Control");
     Map<String, IOperation> operations = connectedControlSM.getOperations();

@@ -21,6 +21,8 @@ package basyx.distributed.oven_aas;
  */
 
 import java.lang.reflect.Field;
+
+import org.eclipse.basyx.submodel.metamodel.api.identifier.IdentifierType;
 import org.eclipse.basyx.submodel.metamodel.api.reference.enums.KeyElements;
 import org.eclipse.basyx.submodel.metamodel.api.reference.enums.KeyType;
 import org.eclipse.basyx.submodel.metamodel.map.SubModel;
@@ -60,6 +62,7 @@ public class TemperatureSensorSubModelFactory {
 
     SubModel sensorSubModel = new SubModel();
     sensorSubModel.setIdShort("Sensor");
+    sensorSubModel.setIdentification(IdentifierType.CUSTOM, "basyx.distributed.oven:submodel:sensor:v0.0.1");
     // Create a lambda property containing the current sensor temperature
     Property temperatureProperty = new Property();
     temperatureProperty.setIdShort("currentTemperature");

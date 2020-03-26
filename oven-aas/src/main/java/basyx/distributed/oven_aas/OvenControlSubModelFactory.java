@@ -22,6 +22,7 @@ package basyx.distributed.oven_aas;
 
 import java.util.function.Function;
 import org.eclipse.basyx.models.controlcomponent.ExecutionState;
+import org.eclipse.basyx.submodel.metamodel.api.identifier.IdentifierType;
 import org.eclipse.basyx.submodel.metamodel.map.SubModel;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.operation.Operation;
 import org.eclipse.basyx.vab.directory.proxy.VABDirectoryProxy;
@@ -52,6 +53,7 @@ public class OvenControlSubModelFactory {
 
     SubModel heaterSubModel = new SubModel();
     heaterSubModel.setIdShort("Control");
+    heaterSubModel.setIdentification(IdentifierType.CUSTOM, "basyx.distributed.oven:submodel:control:v0.0.1");
     // Create an operation that uses the control component to set a temperature value
     Function<Object[], Object> heatInvokable = (params) -> {
       // Select the operation from the control component

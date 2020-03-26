@@ -12,7 +12,8 @@
 	</organization>
 	<inceptionYear>2020</inceptionYear>
 	<licenses>
-		<license><name>EPL-v2</name>
+		<license>
+			<name>EPL-v2</name>
 		</license>
 	</licenses>
 
@@ -82,12 +83,6 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
 				<version>2.0.0</version>
-				<configuration>
-<!-- 					<licenseFile>${basedir}/src/license/epl/header.ftl</licenseFile> -->
-<!-- 					<excludes> -->
-<!-- 						<exclude>${basedir}/src/license/epl/header.ftl</exclude> -->
-<!-- 					</excludes> -->
-				</configuration>
 			</plugin>
 		</plugins>
 		<pluginManagement>
