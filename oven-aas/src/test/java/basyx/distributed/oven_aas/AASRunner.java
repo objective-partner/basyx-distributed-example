@@ -42,6 +42,8 @@ public class AASRunner {
   public static void main(String[] args) throws Exception {
     // Return a AASHTTPRegistryProxy for the registry on localhost at port 4000
     IAASRegistryService registry = new AASRegistryProxy("http://localhost:8080/handson/registry/api/v1/registry/");
+//    IAASRegistryService registry = new AASRegistryProxy("http://oven-aas-basyx-distributed-example.apps-crc.testing/handson/registry/api/v1/registry/");
+//    IAASRegistryService registry = new AASRegistryProxy("http://basyx-distributed-example.apps-crc.testing/handson/registry/api/v1/registry/");
 
     // Create a ConnectedAssetAdministrationShell using a
     // ConnectedAssetAdministrationShellManager
@@ -61,7 +63,7 @@ public class AASRunner {
     
     ISubModel xmlConverterSM = submodels.get("XmlExporter");
     IOperation aasToXmlOperation = xmlConverterSM.getOperations().get("aasToXml");
-    Object result = aasToXmlOperation.invoke(aasURN.toString());
+    Object result = aasToXmlOperation.invoke(aasURN.getURN());
     LOGGER.debug("AasToXml-Result: " + result);
     
 
@@ -70,6 +72,9 @@ public class AASRunner {
     IOperation operation = operations.get("controlTemperature");
     operation.invoke();
 
+    ISingleProperty ovenControlAlias = (ISingleProperty) connectedControlSM.getDataElements().get("alias");
+    ovenControlAlias.set("heater-in-office");
+    ovenControlAlias.get();
 
 
     ISubModel connectedSensorSM = submodels.get("Sensor");

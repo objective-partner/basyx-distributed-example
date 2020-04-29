@@ -34,6 +34,7 @@ import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
 import org.eclipse.basyx.aas.registration.api.IAASRegistryService;
 import org.eclipse.basyx.submodel.metamodel.api.identifier.IdentifierType;
 import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.qualifier.LangString;
 import org.eclipse.basyx.submodel.metamodel.map.qualifier.LangStrings;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.valuetypedef.PropertyValueTypeDef;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.operation.Operation;
@@ -57,7 +58,7 @@ public class AasXmlProviderSubModelFactory {
 		operation.setIdShort("aasToXml");
 		
 		LangStrings operationDescription = new LangStrings();
-		operationDescription.add("en-en", "Takes a ModelUrn, fetches corresponding object from registry and returns it as XML.");
+		operationDescription.add(new LangString("en-en", "Takes a ModelUrn, fetches corresponding object from registry and returns it as XML."));
 		operation.setDescription(operationDescription);
 
 		Function<Object[], Object> xmlExporterInvokable = params -> {
@@ -66,7 +67,8 @@ public class AasXmlProviderSubModelFactory {
 					new ConnectedAssetAdministrationShellManager(registry, connectorProvider);
 			
 			ConnectedAssetAdministrationShell connectedAAS;
-			String urn = params[0].toString();
+			String rawUrnString = params[0].toString();
+			String urn = rawUrnString;
 			try {
 				// The ID of the oven AAS
 				ModelUrn aasURN = new ModelUrn(urn);
@@ -92,7 +94,6 @@ public class AasXmlProviderSubModelFactory {
 		operation.setInvocable(xmlExporterInvokable);
 		
 		OperationVariable urnVariable = new OperationVariable(OperationHelper.createPropertyTemplate(PropertyValueTypeDef.String));
-		urnVariable.setIdShort("aasToExportModelUrn");
 		operation.setInputVariables(Arrays.asList(urnVariable));
 		OperationVariable returnVariable = new OperationVariable(OperationHelper.createPropertyTemplate(PropertyValueTypeDef.String));
 		operation.setOutputVariables(Arrays.asList(returnVariable));

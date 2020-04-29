@@ -1,7 +1,7 @@
 FROM openjdk:8-jdk-alpine
 
 COPY default_command.sh /application/
-RUN chmod 0700 /application/default_command.sh
+RUN chmod 0755 /application/default_command.sh
 
 RUN mkdir -p /application/lib && addgroup -S basyx && adduser -S basyx -G basyx && chown -R basyx /application
 
@@ -20,6 +20,6 @@ ENV PORT -1
 ENV CONTEXT ""
 # ENV MAIN_CLASS please_set_application-main-class_in_pom_properties
 
-CMD /application/default_command.sh
+CMD ls -la /application/ && whoami && /application/default_command.sh
 
 COPY target/dependency/* /application/lib/

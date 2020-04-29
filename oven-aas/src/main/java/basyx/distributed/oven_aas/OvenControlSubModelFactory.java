@@ -24,6 +24,8 @@ import java.util.function.Function;
 import org.eclipse.basyx.models.controlcomponent.ExecutionState;
 import org.eclipse.basyx.submodel.metamodel.api.identifier.IdentifierType;
 import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.Property;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.valuetypedef.PropertyValueTypeDef;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.operation.Operation;
 import org.eclipse.basyx.vab.directory.proxy.VABDirectoryProxy;
 import org.eclipse.basyx.vab.manager.VABConnectionManager;
@@ -86,6 +88,13 @@ public class OvenControlSubModelFactory {
     operation.setIdShort("controlTemperature");
     operation.setInvocable(heatInvokable);
     heaterSubModel.addSubModelElement(operation);
+    
+    
+    Property property = new Property();
+    property.setIdShort("alias");
+    property.setValueType(PropertyValueTypeDef.String);
+    heaterSubModel.addSubModelElement(property);
+    
     return heaterSubModel;
   }
 }
