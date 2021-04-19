@@ -9,19 +9,18 @@ package basyx.distributed.oven_aas;
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
  * http://www.eclipse.org/legal/epl-2.0.
- * 
+ *
  * This Source Code may also be made available under the following Secondary
  * Licenses when the conditions for such availability set forth in the Eclipse
  * Public License, v. 2.0 are satisfied: GNU General Public License, version 2
  * with the GNU Classpath Exception which is
  * available at https://www.gnu.org/software/classpath/license.html.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  * #L%
  */
 
 import java.lang.reflect.Field;
-
 import org.eclipse.basyx.submodel.metamodel.api.identifier.IdentifierType;
 import org.eclipse.basyx.submodel.metamodel.api.reference.enums.KeyElements;
 import org.eclipse.basyx.submodel.metamodel.api.reference.enums.KeyType;
@@ -83,10 +82,8 @@ public class TemperatureSensorSubModelFactory {
         LOGGER.error("Failed to get temperature from remote oven: " + addr, eRemoteCall);
       }
       return temperature;
-    }, null));
-    temperatureProperty.setValueType(PropertyValueTypeDef.Double);
-    temperatureProperty
-        .setSemanticID(new Reference(new Key(KeyElements.PROPERTY, false, "0173-1#02-AAV232#002", KeyType.IRDI)));
+    }, null), PropertyValueTypeDef.Double);
+    temperatureProperty.setSemanticID(new Reference(new Key(KeyElements.PROPERTY, false, "0173-1#02-AAV232#002", KeyType.IRDI)));
     sensorSubModel.addSubModelElement(temperatureProperty);
 
     Property temperatureUnit = new Property("Fahrenheit");
