@@ -62,10 +62,10 @@ public class AASRunner {
     Map<String, ISubModel> submodels = connectedAAS.getSubModels();
 
 
-    // ISubModel xmlConverterSM = submodels.get("XmlExporter");
-    // IOperation aasToXmlOperation = xmlConverterSM.getOperations().get("aasToXml");
-    // Object result = aasToXmlOperation.invoke(aasURN.getURN());
-    // LOGGER.debug("AasToXml-Result: " + result);
+     ISubModel xmlConverterSM = submodels.get("XmlExporter");
+     IOperation aasToXmlOperation = xmlConverterSM.getOperations().get("aasToXml");
+     Object result = aasToXmlOperation.invoke(aasURN.getURN());
+     LOGGER.debug("AasToXml-Result: " + result);
 
 
     ISubModel connectedControlSM = submodels.get("Control");

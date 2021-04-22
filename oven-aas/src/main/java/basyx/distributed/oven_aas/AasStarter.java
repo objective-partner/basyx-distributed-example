@@ -67,7 +67,7 @@ public class AasStarter extends BasyxStarter {
     HttpServlet registryServlet = new VABHTTPInterface<IModelProvider>(registryProvider);
 
     IAASRegistryService registryProxy =
-        new AASRegistryProxy("http://" + this.hostname + ":" + this.port + this.contextRoot + "/registry/api/v1/registry/");
+        new AASRegistryProxy("http://" + this.hostname + ":" + this.port + this.contextRoot + "/registry/");
 
     SubModel sensorSubModel = TemperatureSensorSubModelFactory.createInstance(directory);
     SubModel heaterSubModel = OvenControlSubModelFactory.createInstance(directory);
