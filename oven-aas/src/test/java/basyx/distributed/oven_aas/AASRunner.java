@@ -73,9 +73,9 @@ public class AASRunner {
     IOperation operation = operations.get("controlTemperature");
     operation.invoke();
 
-    IProperty ovenControlAlias = (IProperty) connectedControlSM.getSubmodelElements().get("alias");
-    ovenControlAlias.set("heater-in-office");
-    ovenControlAlias.get();
+//    IProperty ovenControlAlias = (IProperty) connectedControlSM.getSubmodelElements().get("alias");
+//    ovenControlAlias.set("heater-in-office");
+//    ovenControlAlias.get();
 
 
     ISubModel connectedSensorSM = submodels.get("Sensor");
