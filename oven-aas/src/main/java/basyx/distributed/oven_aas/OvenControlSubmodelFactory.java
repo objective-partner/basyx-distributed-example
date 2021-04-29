@@ -21,27 +21,27 @@ package basyx.distributed.oven_aas;
  */
 
 import java.util.function.Function;
+
 import org.eclipse.basyx.models.controlcomponent.ExecutionState;
 import org.eclipse.basyx.submodel.metamodel.api.identifier.IdentifierType;
-import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.Submodel;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.Property;
-import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.valuetypedef.PropertyValueTypeDef;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.operation.Operation;
-import org.eclipse.basyx.vab.directory.proxy.VABDirectoryProxy;
 import org.eclipse.basyx.vab.manager.VABConnectionManager;
 import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
 import org.eclipse.basyx.vab.modelprovider.api.IModelProvider;
-import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorFactory;
+import org.eclipse.basyx.vab.registry.proxy.VABRegistryProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OvenControlSubModelFactory {
+public class OvenControlSubmodelFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OvenControlSubModelFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OvenControlSubmodelFactory.class);
 
-  public static SubModel createInstance(VABDirectoryProxy directoryProxy) {
+  public static Submodel createInstance(VABRegistryProxy registryProxy) {
 
-    VABConnectionManager connectionManager = new VABConnectionManager(directoryProxy, new HTTPConnectorProvider());
+    VABConnectionManager connectionManager = new VABConnectionManager(registryProxy, new HTTPConnectorFactory());
     VABElementProxy element = connectionManager.connectToVABElement("ovenController");
     for (int i = 0; i < 10 && element == null; i++) {
       element = connectionManager.connectToVABElement("ovenController");
@@ -53,22 +53,20 @@ public class OvenControlSubModelFactory {
     }
     IModelProvider connectedOvenControlComponent = element;
 
-    SubModel heaterSubModel = new SubModel();
-    heaterSubModel.setIdShort("Control");
-    heaterSubModel.setIdentification(IdentifierType.CUSTOM, "basyx.distributed.oven:submodel:control:v0.0.1");
+    Submodel heaterSubmodel = new Submodel();
+    heaterSubmodel.setIdShort("Control");
+    heaterSubmodel.setIdentification(IdentifierType.CUSTOM, "basyx.distributed.oven:submodel:control:v0.0.1");
     // Create an operation that uses the control component to set a temperature value
     Function<Object[], Object> heatInvokable = (params) -> {
       // Select the operation from the control component
       try {
-        connectedOvenControlComponent.setModelPropertyValue("status/opMode",
-            "HEAT"/* OvenControlComponent.OPMODE_HEAT */);
+        connectedOvenControlComponent.setValue("status/opMode", "HEAT"/* OvenControlComponent.OPMODE_HEAT */);
 
         // Start the control component operation asynchronous
         connectedOvenControlComponent.invokeOperation("/operations/service/start");
 
         // Wait until the operation is completed
-        while (!connectedOvenControlComponent.getModelPropertyValue("status/exState")
-            .equals(ExecutionState.COMPLETE.getValue())) {
+        while (!connectedOvenControlComponent.getValue("status/exState").equals(ExecutionState.COMPLETE.getValue())) {
           try {
             Thread.sleep(500);
           } catch (InterruptedException e) {
@@ -86,15 +84,14 @@ public class OvenControlSubModelFactory {
     // Create the Operation
     Operation operation = new Operation();
     operation.setIdShort("controlTemperature");
-    operation.setInvocable(heatInvokable);
-    heaterSubModel.addSubModelElement(operation);
-    
-    
+    operation.setInvokable(heatInvokable);
+    heaterSubmodel.addSubmodelElement(operation);
+
+
     Property property = new Property();
     property.setIdShort("alias");
-    property.setValueType(PropertyValueTypeDef.String);
-    heaterSubModel.addSubModelElement(property);
-    
-    return heaterSubModel;
+    heaterSubmodel.addSubmodelElement(property);
+
+    return heaterSubmodel;
   }
 }

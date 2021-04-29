@@ -21,25 +21,27 @@ package basyx.distributed.oven_aas;
  */
 
 import javax.servlet.http.HttpServlet;
+
 import org.eclipse.basyx.aas.metamodel.map.AssetAdministrationShell;
 import org.eclipse.basyx.aas.metamodel.map.descriptor.AASDescriptor;
 import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
 import org.eclipse.basyx.aas.metamodel.map.descriptor.SubmodelDescriptor;
-import org.eclipse.basyx.aas.registration.api.IAASRegistryService;
+import org.eclipse.basyx.aas.registration.api.IAASRegistry;
 import org.eclipse.basyx.aas.registration.memory.InMemoryRegistry;
 import org.eclipse.basyx.aas.registration.proxy.AASRegistryProxy;
-import org.eclipse.basyx.aas.registration.restapi.DirectoryModelProvider;
+import org.eclipse.basyx.aas.registration.restapi.AASRegistryModelProvider;
 import org.eclipse.basyx.aas.restapi.AASModelProvider;
-import org.eclipse.basyx.aas.restapi.VABMultiSubmodelProvider;
-import org.eclipse.basyx.submodel.metamodel.map.SubModel;
-import org.eclipse.basyx.submodel.restapi.SubModelProvider;
-import org.eclipse.basyx.vab.directory.proxy.VABDirectoryProxy;
+import org.eclipse.basyx.aas.restapi.MultiSubmodelProvider;
+import org.eclipse.basyx.submodel.metamodel.map.Submodel;
+import org.eclipse.basyx.submodel.restapi.SubmodelProvider;
 import org.eclipse.basyx.vab.modelprovider.api.IModelProvider;
-import org.eclipse.basyx.vab.protocol.http.server.AASHTTPServer;
 import org.eclipse.basyx.vab.protocol.http.server.BaSyxContext;
+import org.eclipse.basyx.vab.protocol.http.server.BaSyxHTTPServer;
 import org.eclipse.basyx.vab.protocol.http.server.VABHTTPInterface;
+import org.eclipse.basyx.vab.registry.proxy.VABRegistryProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import basyx.distributed.BasyxStarter;
 import picocli.CommandLine;
 
@@ -57,21 +59,22 @@ public class AasStarter extends BasyxStarter {
   @Override
   public void run() {
 
-    String directoryUrl = String.format("http://%s:%d%s/", this.directoryHostname, this.directoryPort, this.directoryContextRoot);
+    String directoryUrl =
+        String.format("http://%s:%d%s/", this.directoryHostname, this.directoryPort, this.directoryContextRoot);
     LOGGER.info("Connecting to directory: {}", directoryUrl);
-    VABDirectoryProxy directory = new VABDirectoryProxy(directoryUrl);
+    VABRegistryProxy directory = new VABRegistryProxy(directoryUrl);
 
     // For this HandsOn, create an InMemoryRegistry for registering the AAS
-    IAASRegistryService registry = new InMemoryRegistry();
-    IModelProvider registryProvider = new DirectoryModelProvider(registry);
+    IAASRegistry registry = new InMemoryRegistry();
+    IModelProvider registryProvider = new AASRegistryModelProvider(registry);
     HttpServlet registryServlet = new VABHTTPInterface<IModelProvider>(registryProvider);
 
-    IAASRegistryService registryProxy =
+    IAASRegistry registryProxy =
         new AASRegistryProxy("http://" + this.hostname + ":" + this.port + this.contextRoot + "/registry/");
 
-    SubModel sensorSubModel = TemperatureSensorSubModelFactory.createInstance(directory);
-    SubModel heaterSubModel = OvenControlSubModelFactory.createInstance(directory);
-    SubModel aasXmlConverterSubModel = AasXmlProviderSubModelFactory.createInstance(registryProxy);
+    Submodel sensorSubmodel = TemperatureSensorSubmodelFactory.createInstance(directory);
+    Submodel heaterSubmodel = OvenControlSubmodelFactory.createInstance(directory);
+    Submodel aasXmlConverterSubmodel = AasXmlProviderSubmodelFactory.createInstance(registryProxy);
 
     /**
      * Minimal AAS Information
@@ -93,16 +96,16 @@ public class AasStarter extends BasyxStarter {
      */
     // AASModelProvider and SubModelProvider implement the IModelProvider interface
     AASModelProvider aasProvider = new AASModelProvider(aas);
-    SubModelProvider sensorSMProvider = new SubModelProvider(sensorSubModel);
-    SubModelProvider heaterSMProvider = new SubModelProvider(heaterSubModel);
-    SubModelProvider xmlSMProvider = new SubModelProvider(aasXmlConverterSubModel);
+    SubmodelProvider sensorSMProvider = new SubmodelProvider(sensorSubmodel);
+    SubmodelProvider heaterSMProvider = new SubmodelProvider(heaterSubmodel);
+    SubmodelProvider xmlSMProvider = new SubmodelProvider(aasXmlConverterSubmodel);
 
     // Add the independent providers to the MultiSubmodelProvider that can be deployed on a single node
-    VABMultiSubmodelProvider fullProvider = new VABMultiSubmodelProvider();
+    MultiSubmodelProvider fullProvider = new MultiSubmodelProvider();
     fullProvider.setAssetAdministrationShell(aasProvider);
-    fullProvider.addSubmodel("Sensor", sensorSMProvider);
-    fullProvider.addSubmodel("Control", heaterSMProvider);
-    fullProvider.addSubmodel("XmlExporter", xmlSMProvider);
+    fullProvider.addSubmodel(sensorSMProvider);
+    fullProvider.addSubmodel(heaterSMProvider);
+    fullProvider.addSubmodel(xmlSMProvider);
 
     // Although the providers for aas/submodels implement the AAS API, they are still IModelProviders!
     // IModelProvider aasIModelProvider = fullProvider;
@@ -119,12 +122,12 @@ public class AasStarter extends BasyxStarter {
     // now add the references of the submodels to the AAS header
     AASDescriptor aasDescriptor =
         new AASDescriptor(aas, String.format("http://%s:%d%s/oven/aas", this.hostname, this.port, this.contextRoot));
-    aasDescriptor.addSubmodelDescriptor(new SubmodelDescriptor(sensorSubModel,
-        String.format("http://%s:%d%s/oven/aas/submodels/Sensor/submodel", this.hostname, this.port, this.contextRoot)));
-    aasDescriptor.addSubmodelDescriptor(new SubmodelDescriptor(heaterSubModel,
-        String.format("http://%s:%d%s/oven/aas/submodels/Control/submodel", this.hostname, this.port, this.contextRoot)));
-    aasDescriptor.addSubmodelDescriptor(new SubmodelDescriptor(aasXmlConverterSubModel,
-        String.format("http://%s:%d%s/oven/aas/submodels/XmlExporter/submodel", this.hostname, this.port, this.contextRoot)));
+    aasDescriptor.addSubmodelDescriptor(new SubmodelDescriptor(sensorSubmodel, String
+        .format("http://%s:%d%s/oven/aas/submodels/Sensor/submodel", this.hostname, this.port, this.contextRoot)));
+    aasDescriptor.addSubmodelDescriptor(new SubmodelDescriptor(heaterSubmodel, String
+        .format("http://%s:%d%s/oven/aas/submodels/Control/submodel", this.hostname, this.port, this.contextRoot)));
+    aasDescriptor.addSubmodelDescriptor(new SubmodelDescriptor(aasXmlConverterSubmodel, String
+        .format("http://%s:%d%s/oven/aas/submodels/XmlExporter/submodel", this.hostname, this.port, this.contextRoot)));
 
     // Register the VAB model at the directory (locally in this case)
     registry.register(aasDescriptor);
@@ -133,7 +136,7 @@ public class AasStarter extends BasyxStarter {
     BaSyxContext context = new BaSyxContext(this.contextRoot, "", this.hostname, this.port);
     context.addServletMapping("/oven/*", aasServlet);
     context.addServletMapping("/registry/*", registryServlet);
-    AASHTTPServer httpServer = new AASHTTPServer(context);
+    BaSyxHTTPServer httpServer = new BaSyxHTTPServer(context);
 
     httpServer.start();
 

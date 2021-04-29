@@ -21,30 +21,31 @@ package basyx.distributed.oven_aas;
  */
 
 import java.lang.reflect.Field;
+
 import org.eclipse.basyx.submodel.metamodel.api.identifier.IdentifierType;
 import org.eclipse.basyx.submodel.metamodel.api.reference.enums.KeyElements;
 import org.eclipse.basyx.submodel.metamodel.api.reference.enums.KeyType;
-import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.Submodel;
 import org.eclipse.basyx.submodel.metamodel.map.reference.Key;
 import org.eclipse.basyx.submodel.metamodel.map.reference.Reference;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.Property;
-import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.valuetypedef.PropertyValueTypeDef;
-import org.eclipse.basyx.vab.directory.proxy.VABDirectoryProxy;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.valuetype.ValueType;
 import org.eclipse.basyx.vab.manager.VABConnectionManager;
 import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
 import org.eclipse.basyx.vab.modelprovider.api.IModelProvider;
 import org.eclipse.basyx.vab.modelprovider.lambda.VABLambdaProviderHelper;
-import org.eclipse.basyx.vab.protocol.basyx.connector.BaSyxConnectorProvider;
+import org.eclipse.basyx.vab.protocol.basyx.connector.BaSyxConnectorFactory;
+import org.eclipse.basyx.vab.registry.proxy.VABRegistryProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TemperatureSensorSubModelFactory {
+public class TemperatureSensorSubmodelFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TemperatureSensorSubModelFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TemperatureSensorSubmodelFactory.class);
 
-  public static SubModel createInstance(VABDirectoryProxy directoryProxy) {
+  public static Submodel createInstance(VABRegistryProxy registryProxy) {
 
-    VABConnectionManager connectionManager = new VABConnectionManager(directoryProxy, new BaSyxConnectorProvider());
+    VABConnectionManager connectionManager = new VABConnectionManager(registryProxy, new BaSyxConnectorFactory());
     VABElementProxy element = connectionManager.connectToVABElement("oven");
     for (int i = 0; i < 10 && element == null; i++) {
       element = connectionManager.connectToVABElement("oven");
@@ -59,9 +60,9 @@ public class TemperatureSensorSubModelFactory {
     }
     IModelProvider connectedOven = element;
 
-    SubModel sensorSubModel = new SubModel();
-    sensorSubModel.setIdShort("Sensor");
-    sensorSubModel.setIdentification(IdentifierType.CUSTOM, "basyx.distributed.oven:submodel:sensor:v0.0.1");
+    Submodel sensorSubmodel = new Submodel();
+    sensorSubmodel.setIdShort("Sensor");
+    sensorSubmodel.setIdentification(IdentifierType.CUSTOM, "basyx.distributed.oven:submodel:sensor:v0.0.1");
     // Create a lambda property containing the current sensor temperature
     Property temperatureProperty = new Property();
     temperatureProperty.setIdShort("currentTemperature");
@@ -69,7 +70,7 @@ public class TemperatureSensorSubModelFactory {
       LOGGER.debug("Requesting temperature");
       Double temperature = null;
       try {
-        temperature = (Double) connectedOven.getModelPropertyValue("/properties/temperature");
+        temperature = (Double) connectedOven.getValue("/properties/temperature");
       } catch (Exception eRemoteCall) {
         String addr = "<failed to get value by reflection>";
         try {
@@ -82,13 +83,13 @@ public class TemperatureSensorSubModelFactory {
         LOGGER.error("Failed to get temperature from remote oven: " + addr, eRemoteCall);
       }
       return temperature;
-    }, null), PropertyValueTypeDef.Double);
-    temperatureProperty.setSemanticID(new Reference(new Key(KeyElements.PROPERTY, false, "0173-1#02-AAV232#002", KeyType.IRDI)));
-    sensorSubModel.addSubModelElement(temperatureProperty);
+    }, null), ValueType.Double);
+    temperatureProperty.setSemanticId(new Reference(new Key(KeyElements.PROPERTY, false, "0173-1#02-AAV232#002", KeyType.IRDI)));
+    sensorSubmodel.addSubmodelElement(temperatureProperty);
 
     Property temperatureUnit = new Property("Fahrenheit");
     temperatureUnit.setIdShort("temperatureUnit");
-    sensorSubModel.addSubModelElement(temperatureUnit);
-    return sensorSubModel;
+    sensorSubmodel.addSubmodelElement(temperatureUnit);
+    return sensorSubmodel;
   }
 }
