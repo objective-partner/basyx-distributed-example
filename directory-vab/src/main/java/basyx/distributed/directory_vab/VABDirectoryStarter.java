@@ -20,9 +20,9 @@ package basyx.distributed.directory_vab;
  * #L%
  */
 
-import org.eclipse.basyx.vab.directory.restapi.DirectoryModelProvider;
+import org.eclipse.basyx.vab.registry.restapi.VABRegistryModelProvider;
 import org.eclipse.basyx.vab.modelprovider.api.IModelProvider;
-import org.eclipse.basyx.vab.protocol.http.server.AASHTTPServer;
+import org.eclipse.basyx.vab.protocol.http.server.BaSyxHTTPServer;
 import org.eclipse.basyx.vab.protocol.http.server.BaSyxContext;
 import org.eclipse.basyx.vab.protocol.http.server.VABHTTPInterface;
 import basyx.distributed.BasyxStarter;
@@ -40,10 +40,10 @@ public class VABDirectoryStarter extends BasyxStarter {
         // Ein Servlet aufbauen und das Directory einbinden
         BaSyxContext context = new BaSyxContext(this.directoryContextRoot, this.directoryContextRoot,
                 this.directoryHostname, this.directoryPort);
-        context.addServletMapping("/*", new VABHTTPInterface<IModelProvider>(new DirectoryModelProvider()));
+        context.addServletMapping("/*", new VABHTTPInterface<IModelProvider>(new VABRegistryModelProvider()));
 
         // Das Servlet auf einem Server ablegen und Server starten
-        AASHTTPServer registryServer = new AASHTTPServer(context);
+        BaSyxHTTPServer registryServer = new BaSyxHTTPServer(context);
         registryServer.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread() {

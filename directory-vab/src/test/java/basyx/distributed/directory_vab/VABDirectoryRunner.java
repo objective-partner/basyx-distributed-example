@@ -21,10 +21,10 @@ package basyx.distributed.directory_vab;
  */
 
 
-import org.eclipse.basyx.vab.directory.proxy.VABDirectoryProxy;
+import org.eclipse.basyx.vab.registry.proxy.VABRegistryProxy;
 import org.eclipse.basyx.vab.manager.VABConnectionManager;
 import org.eclipse.basyx.vab.modelprovider.api.IModelProvider;
-import org.eclipse.basyx.vab.protocol.basyx.connector.BaSyxConnectorProvider;
+import org.eclipse.basyx.vab.protocol.basyx.connector.BaSyxConnectorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -53,14 +53,14 @@ public class VABDirectoryRunner implements Runnable {
 
     // The Virtual Automation Bus hides network details to the connected site. Only the endpoint of the
     // directory has to be known:
-    VABDirectoryProxy directoryProxy = new VABDirectoryProxy(
+    VABRegistryProxy directoryProxy = new VABRegistryProxy(
         String.format("http://%s:%d/%s", this.directoryHostname, this.directoryPort, this.directoryContextRoot));
 
     // The connection manager is responsible for resolving every connection attempt
     // For this, it needs:
     // - The directory at which all models are registered
     // - A provider for different types of network protocols (in this example, only HTTP-REST)
-    VABConnectionManager connectionManager = new VABConnectionManager(directoryProxy, new BaSyxConnectorProvider());
+    VABConnectionManager connectionManager = new VABConnectionManager(directoryProxy, new BaSyxConnectorFactory());
 
 
     // It is now one line of code to retrieve a model provider for any registered
@@ -75,7 +75,7 @@ public class VABDirectoryRunner implements Runnable {
         Thread.sleep(100);
 
         // Retrieve the current temperature from the model provider
-        double temperature = (double) connectedOven.getModelPropertyValue("/properties/temperature");
+        double temperature = (double) connectedOven.getValue("/properties/temperature");
         LOGGER.info("Current temperature: " + temperature);
 
         // Turn the oven on/off, depending on the defined temperature range
