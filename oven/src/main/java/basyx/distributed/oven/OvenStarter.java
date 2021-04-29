@@ -21,7 +21,7 @@ package basyx.distributed.oven;
  */
 
 import java.util.Map;
-import org.eclipse.basyx.vab.directory.proxy.VABDirectoryProxy;
+import org.eclipse.basyx.vab.registry.proxy.VABRegistryProxy;
 import org.eclipse.basyx.vab.modelprovider.api.IModelProvider;
 import org.eclipse.basyx.vab.modelprovider.lambda.VABLambdaProvider;
 import org.eclipse.basyx.vab.protocol.basyx.server.BaSyxTCPServer;
@@ -57,7 +57,7 @@ public class OvenStarter extends BasyxStarter {
         // directory has to be known:
         String directoryUrl =
                 String.format("http://%s:%d%s", this.directoryHostname, this.directoryPort, this.directoryContextRoot);
-        VABDirectoryProxy directory = new VABDirectoryProxy(directoryUrl);
+        VABRegistryProxy directory = new VABRegistryProxy(directoryUrl);
         logger.info("Connected to VAB directory " + directoryUrl);
 
         // VABConnectionManager connectionManager = new VABConnectionManager(directory,
