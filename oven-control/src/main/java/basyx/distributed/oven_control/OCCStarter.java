@@ -21,12 +21,12 @@ package basyx.distributed.oven_control;
  */
 
 import javax.servlet.http.HttpServlet;
-import org.eclipse.basyx.vab.directory.proxy.VABDirectoryProxy;
+import org.eclipse.basyx.vab.registry.proxy.VABRegistryProxy;
 import org.eclipse.basyx.vab.manager.VABConnectionManager;
 import org.eclipse.basyx.vab.modelprovider.api.IModelProvider;
 import org.eclipse.basyx.vab.modelprovider.map.VABMapProvider;
-import org.eclipse.basyx.vab.protocol.basyx.connector.BaSyxConnectorProvider;
-import org.eclipse.basyx.vab.protocol.http.server.AASHTTPServer;
+import org.eclipse.basyx.vab.protocol.basyx.connector.BaSyxConnectorFactory;
+import org.eclipse.basyx.vab.protocol.http.server.BaSyxHTTPServer;
 import org.eclipse.basyx.vab.protocol.http.server.BaSyxContext;
 import org.eclipse.basyx.vab.protocol.http.server.VABHTTPInterface;
 import org.slf4j.Logger;
@@ -36,69 +36,68 @@ import picocli.CommandLine;
 
 public class OCCStarter extends BasyxStarter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OCCStarter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OCCStarter.class);
 
-    public OCCStarter() {
-        this.port = 8082;
-    }
+  public OCCStarter() {
+    this.port = 8082;
+  }
 
-    @Override
-    public void run() {
-        // At the connected site, no direct access to the model is possible
-        // Every access is done through the network infrastructure
+  @Override
+  public void run() {
+    // At the connected site, no direct access to the model is possible
+    // Every access is done through the network infrastructure
 
-        // The Virtual Automation Bus hides network details to the connected site. Only
-        // the endpoint of the
-        // directory has to be known:
-        String directoryUrl =
-                String.format("http://%s:%d%s/", this.directoryHostname, this.directoryPort, this.directoryContextRoot);
-        VABDirectoryProxy directoryProxy = new VABDirectoryProxy(directoryUrl);
-        LOGGER.info("Connected to directory {}", directoryUrl);
+    // The Virtual Automation Bus hides network details to the connected site. Only
+    // the endpoint of the
+    // directory has to be known:
+    String directoryUrl =
+        String.format("http://%s:%d%s/", this.directoryHostname, this.directoryPort, this.directoryContextRoot);
+    VABRegistryProxy directoryProxy = new VABRegistryProxy(directoryUrl);
+    LOGGER.info("Connected to directory {}", directoryUrl);
 
-        // The connection manager is responsible for resolving every connection attempt
-        // For this, it needs:
-        // - The directory at which all models are registered
-        // - A provider for different types of network protocols (in this example, only
-        // HTTP-REST)
-        VABConnectionManager connectionManager = new VABConnectionManager(directoryProxy, new BaSyxConnectorProvider());
+    // The connection manager is responsible for resolving every connection attempt
+    // For this, it needs:
+    // - The directory at which all models are registered
+    // - A provider for different types of network protocols (in this example, only
+    // HTTP-REST)
+    VABConnectionManager connectionManager = new VABConnectionManager(directoryProxy, new BaSyxConnectorFactory());
 
-        OvenControlComponent controlComponent = new OvenControlComponent(connectionManager);
+    OvenControlComponent controlComponent = new OvenControlComponent(connectionManager);
 
-        // Like the VAB model created before, the structure of the control component is
-        // a Map
-        // Map ccModel = (Map) cc;
+    // Like the VAB model created before, the structure of the control component is
+    // a Map
+    // Map ccModel = (Map) cc;
 
-        // Create a server for the Control Component and provide it in the VAB (at port
-        // 4002)
-        HttpServlet modelServlet = new VABHTTPInterface<IModelProvider>(new VABMapProvider(controlComponent));
-        LOGGER.info("Created a servlet for the oven model");
-        // This time, a BaSyx-specific TCP interface is used.
-        // Likewise, it is also possible to wrap the control component using a http
-        // servlet as before
-        BaSyxContext context = new BaSyxContext(this.contextRoot, "", this.hostname, this.port);
-        // => Every servlet contained in this context is available at
-        // http://localhost:4002/handson/
-        context.addServletMapping("/oven/controller/*", modelServlet);
-        // The model will be available at http://localhost:4003/handson/oven/controller/
+    // Create a server for the Control Component and provide it in the VAB (at port
+    // 4002)
+    HttpServlet modelServlet = new VABHTTPInterface<IModelProvider>(new VABMapProvider(controlComponent));
+    LOGGER.info("Created a servlet for the oven model");
+    // This time, a BaSyx-specific TCP interface is used.
+    // Likewise, it is also possible to wrap the control component using a http
+    // servlet as before
+    BaSyxContext context = new BaSyxContext(this.contextRoot, "", this.hostname, this.port);
+    // => Every servlet contained in this context is available at
+    // http://localhost:4002/handson/
+    context.addServletMapping("/oven/controller/*", modelServlet);
+    // The model will be available at http://localhost:4003/handson/oven/controller/
 
-        String controllerUrl =
-                String.format("http://%s:%d%s/oven/controller/", this.hostname, this.port, this.contextRoot);
-        directoryProxy.addMapping("ovenController", controllerUrl);
-        LOGGER.info("Registered ovenController as {}", controllerUrl);
+    String controllerUrl = String.format("http://%s:%d%s/oven/controller/", this.hostname, this.port, this.contextRoot);
+    directoryProxy.addMapping("ovenController", controllerUrl);
+    LOGGER.info("Registered ovenController as {}", controllerUrl);
 
-        AASHTTPServer server = new AASHTTPServer(context);
-        server.start();
-        LOGGER.info("HTTP server started");
+    BaSyxHTTPServer server = new BaSyxHTTPServer(context);
+    server.start();
+    LOGGER.info("HTTP server started");
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                server.shutdown();
-            }
-        });
-    }
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        server.shutdown();
+      }
+    });
+  }
 
-    public static void main(String... args) {
-        new CommandLine(new OCCStarter()).execute(args);
-    }
+  public static void main(String... args) {
+    new CommandLine(new OCCStarter()).execute(args);
+  }
 }

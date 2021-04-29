@@ -71,7 +71,7 @@ public class OvenControlComponent extends SimpleControlComponent implements Cont
         for (int i = 0; i < 50; i++) {
 
           // Retrieve the current temperature from the model provider
-          double temperature = (double) connectedOven.getModelPropertyValue("/properties/temperature");
+          double temperature = (double) connectedOven.getValue("/properties/temperature");
           LOGGER.info("Current temperature: " + temperature);
 
           if (temperature < 30.0d) {
