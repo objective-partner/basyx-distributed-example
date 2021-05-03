@@ -33,12 +33,13 @@ import org.eclipse.basyx.aas.metamodel.connected.ConnectedAssetAdministrationShe
 import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
 import org.eclipse.basyx.aas.registration.api.IAASRegistry;
 import org.eclipse.basyx.submodel.metamodel.api.identifier.IdentifierType;
+import org.eclipse.basyx.submodel.metamodel.api.qualifier.haskind.ModelingKind;
 import org.eclipse.basyx.submodel.metamodel.map.Submodel;
 import org.eclipse.basyx.submodel.metamodel.map.qualifier.LangString;
 import org.eclipse.basyx.submodel.metamodel.map.qualifier.LangStrings;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.Property;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.valuetype.ValueType;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.operation.Operation;
-import org.eclipse.basyx.submodel.metamodel.map.submodelelement.operation.OperationHelper;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.operation.OperationVariable;
 import org.eclipse.basyx.vab.protocol.api.IConnectorFactory;
 import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorFactory;
@@ -96,13 +97,21 @@ public class AasXmlProviderSubmodelFactory {
     };
     operation.setInvokable(xmlExporterInvokable);
 
-    OperationVariable urnVariable = new OperationVariable(OperationHelper.createPropertyTemplate(ValueType.String));
-    operation.setInputVariables(Arrays.asList(urnVariable));
-    OperationVariable returnVariable = new OperationVariable(OperationHelper.createPropertyTemplate(ValueType.String));
-    operation.setOutputVariables(Arrays.asList(returnVariable));
+    OperationVariable urnVariable = new OperationVariable(createStringProperty("urnVariable"));
+    operation.setInputVariables(Collections.singletonList(urnVariable));
+    OperationVariable returnVariable = new OperationVariable(createStringProperty("returnVariable"));
+    operation.setOutputVariables(Collections.singletonList(returnVariable));
 
     aasXmlExporterSubmodel.addSubmodelElement(operation);
 
     return aasXmlExporterSubmodel;
+  }
+
+  private static Property createStringProperty(String idShort) {
+    Property prop = new Property();
+    prop.setValueType(ValueType.String);
+    prop.setModelingKind(ModelingKind.TEMPLATE);
+    prop.setIdShort(idShort);
+    return prop;
   }
 }
