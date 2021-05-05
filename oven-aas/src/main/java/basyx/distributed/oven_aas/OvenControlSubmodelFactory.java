@@ -1,5 +1,7 @@
 package basyx.distributed.oven_aas;
 
+import java.util.Collections;
+
 /*-
  * #%L
  * basyx-distributed-example-oven-aas
@@ -21,27 +23,29 @@ package basyx.distributed.oven_aas;
  */
 
 import java.util.function.Function;
+
 import org.eclipse.basyx.models.controlcomponent.ExecutionState;
 import org.eclipse.basyx.submodel.metamodel.api.identifier.IdentifierType;
-import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.Submodel;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.Property;
-import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.valuetypedef.PropertyValueTypeDef;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.dataelement.property.valuetype.ValueType;
 import org.eclipse.basyx.submodel.metamodel.map.submodelelement.operation.Operation;
-import org.eclipse.basyx.vab.directory.proxy.VABDirectoryProxy;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.operation.OperationVariable;
 import org.eclipse.basyx.vab.manager.VABConnectionManager;
 import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
 import org.eclipse.basyx.vab.modelprovider.api.IModelProvider;
-import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorFactory;
+import org.eclipse.basyx.vab.registry.proxy.VABRegistryProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OvenControlSubModelFactory {
+public class OvenControlSubmodelFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OvenControlSubModelFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OvenControlSubmodelFactory.class);
 
-  public static SubModel createInstance(VABDirectoryProxy directoryProxy) {
+  public static Submodel createInstance(VABRegistryProxy registryProxy) {
 
-    VABConnectionManager connectionManager = new VABConnectionManager(directoryProxy, new HTTPConnectorProvider());
+    VABConnectionManager connectionManager = new VABConnectionManager(registryProxy, new HTTPConnectorFactory());
     VABElementProxy element = connectionManager.connectToVABElement("ovenController");
     for (int i = 0; i < 10 && element == null; i++) {
       element = connectionManager.connectToVABElement("ovenController");
@@ -53,29 +57,27 @@ public class OvenControlSubModelFactory {
     }
     IModelProvider connectedOvenControlComponent = element;
 
-    SubModel heaterSubModel = new SubModel();
-    heaterSubModel.setIdShort("Control");
-    heaterSubModel.setIdentification(IdentifierType.CUSTOM, "basyx.distributed.oven:submodel:control:v0.0.1");
+    Submodel heaterSubmodel = new Submodel();
+    heaterSubmodel.setIdShort("Control");
+    heaterSubmodel.setIdentification(IdentifierType.CUSTOM, "basyx.distributed.oven:submodel:control:v0.0.1");
     // Create an operation that uses the control component to set a temperature value
     Function<Object[], Object> heatInvokable = (params) -> {
       // Select the operation from the control component
       try {
-        connectedOvenControlComponent.setModelPropertyValue("status/opMode",
-            "HEAT"/* OvenControlComponent.OPMODE_HEAT */);
+        connectedOvenControlComponent.setValue("STATUS/OPMODE", "HEAT"/* OvenControlComponent.OPMODE_HEAT */);
 
         // Start the control component operation asynchronous
-        connectedOvenControlComponent.invokeOperation("/operations/service/start");
+        connectedOvenControlComponent.invokeOperation("/OPERATIONS/START");
 
         // Wait until the operation is completed
-        while (!connectedOvenControlComponent.getModelPropertyValue("status/exState")
-            .equals(ExecutionState.COMPLETE.getValue())) {
+        while (!connectedOvenControlComponent.getValue("STATUS/EXST").equals(ExecutionState.COMPLETE.getValue())) {
           try {
             Thread.sleep(500);
           } catch (InterruptedException e) {
           }
         }
 
-        connectedOvenControlComponent.invokeOperation("operations/service/reset");
+        connectedOvenControlComponent.invokeOperation("OPERATIONS/RESET");
       } catch (Exception e) {
         LOGGER.error("Something failed - giving up", e);
       }
@@ -86,15 +88,16 @@ public class OvenControlSubModelFactory {
     // Create the Operation
     Operation operation = new Operation();
     operation.setIdShort("controlTemperature");
-    operation.setInvocable(heatInvokable);
-    heaterSubModel.addSubModelElement(operation);
-    
-    
+    operation.setInvokable(heatInvokable);
+    operation.setOutputVariables(Collections.singletonList(new OperationVariable(new Property("result", 0))));
+    heaterSubmodel.addSubmodelElement(operation);
+
+
     Property property = new Property();
     property.setIdShort("alias");
-    property.setValueType(PropertyValueTypeDef.String);
-    heaterSubModel.addSubModelElement(property);
-    
-    return heaterSubModel;
+    property.setValueType(ValueType.String);
+    heaterSubmodel.addSubmodelElement(property);
+
+    return heaterSubmodel;
   }
 }

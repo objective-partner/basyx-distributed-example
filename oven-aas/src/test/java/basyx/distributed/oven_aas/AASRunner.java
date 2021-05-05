@@ -21,17 +21,18 @@ package basyx.distributed.oven_aas;
  */
 
 import java.util.Map;
+
 import org.eclipse.basyx.aas.manager.ConnectedAssetAdministrationShellManager;
 import org.eclipse.basyx.aas.metamodel.connected.ConnectedAssetAdministrationShell;
 import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
-import org.eclipse.basyx.aas.registration.api.IAASRegistryService;
+import org.eclipse.basyx.aas.registration.api.IAASRegistry;
 import org.eclipse.basyx.aas.registration.proxy.AASRegistryProxy;
-import org.eclipse.basyx.submodel.metamodel.api.ISubModel;
+import org.eclipse.basyx.submodel.metamodel.api.ISubmodel;
 import org.eclipse.basyx.submodel.metamodel.api.submodelelement.ISubmodelElement;
 import org.eclipse.basyx.submodel.metamodel.api.submodelelement.dataelement.IProperty;
 import org.eclipse.basyx.submodel.metamodel.api.submodelelement.operation.IOperation;
-import org.eclipse.basyx.vab.protocol.api.IConnectorProvider;
-import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
+import org.eclipse.basyx.vab.protocol.api.IConnectorFactory;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ public class AASRunner {
 
   public static void main(String[] args) throws Exception {
     // Return a AASHTTPRegistryProxy for the registry on localhost at port 4000
-    IAASRegistryService registry = new AASRegistryProxy("http://localhost:8080/handson/registry/");
+    IAASRegistry registry = new AASRegistryProxy("http://localhost:8080/handson/registry/");
     // IAASRegistryService registry = new
     // AASRegistryProxy("http://oven-aas-basyx-distributed-example.apps-crc.testing/handson/registry/api/v1/registry/");
     // IAASRegistryService registry = new
@@ -49,8 +50,9 @@ public class AASRunner {
 
     // Create a ConnectedAssetAdministrationShell using a
     // ConnectedAssetAdministrationShellManager
-    IConnectorProvider connectorProvider = new HTTPConnectorProvider();
-    ConnectedAssetAdministrationShellManager manager = new ConnectedAssetAdministrationShellManager(registry, connectorProvider);
+    IConnectorFactory connectorFactory = new HTTPConnectorFactory();
+    ConnectedAssetAdministrationShellManager manager =
+        new ConnectedAssetAdministrationShellManager(registry, connectorFactory);
 
     // The ID of the oven AAS
     ModelUrn aasURN = new ModelUrn("de.FHG", "devices.es.iese", "AAS", "1.0", "1", "oven01", "001");
@@ -59,29 +61,29 @@ public class AASRunner {
 
     // Connect to the AAS and read the current temperature
     // Either Create a connected property using the connected facades
-    Map<String, ISubModel> submodels = connectedAAS.getSubModels();
+    Map<String, ISubmodel> submodels = connectedAAS.getSubmodels();
 
 
-    // ISubModel xmlConverterSM = submodels.get("XmlExporter");
-    // IOperation aasToXmlOperation = xmlConverterSM.getOperations().get("aasToXml");
-    // Object result = aasToXmlOperation.invoke(aasURN.getURN());
-    // LOGGER.debug("AasToXml-Result: " + result);
+    ISubmodel xmlConverterSM = submodels.get("XmlExporter");
+    IOperation aasToXmlOperation = xmlConverterSM.getOperations().get("aasToXml");
+    Object result = aasToXmlOperation.invoke(aasURN.getURN());
+    LOGGER.debug("AasToXml-Result: " + result);
 
 
-    ISubModel connectedControlSM = submodels.get("Control");
+    ISubmodel connectedControlSM = submodels.get("Control");
     Map<String, IOperation> operations = connectedControlSM.getOperations();
     IOperation operation = operations.get("controlTemperature");
     operation.invoke();
 
     IProperty ovenControlAlias = (IProperty) connectedControlSM.getSubmodelElements().get("alias");
-    ovenControlAlias.set("heater-in-office");
-    ovenControlAlias.get();
+    ovenControlAlias.setValue("heater-in-office");
+    ovenControlAlias.getValue();
 
 
-    ISubModel connectedSensorSM = submodels.get("Sensor");
+    ISubmodel connectedSensorSM = submodels.get("Sensor");
     Map<String, ISubmodelElement> properties = connectedSensorSM.getSubmodelElements();
     IProperty temperatureProperty = (IProperty) properties.get("currentTemperature");
-    double temperature = (double) temperatureProperty.get();
+    double temperature = (double) temperatureProperty.getValue();
     // Or get a VABElementProxy to directly query the VAB path of the property
     /*
      * IModelProvider providerProxy = connectedAAS.getProxy(); String temperatureValuePath =
@@ -93,7 +95,7 @@ public class AASRunner {
     // Connect to the AAS and read the current temperature
     // Either use the connected variants:
     IProperty unitProperty = (IProperty) properties.get("temperatureUnit");
-    String temperatureUnit = (String) unitProperty.get();
+    String temperatureUnit = (String) unitProperty.getValue();
     // Or get a VABElementProxy to directly query the VAB path of the property
     /*
      * String temperatureUnitPath = "/submodels/Sensor/dataElements/temperatureUnit/value"; ret =

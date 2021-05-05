@@ -51,7 +51,7 @@ public class OvenPropertiesModel {
       IModelProvider connectedOven = connectionManager.connectToVABElement("oven");
       Double temperature = null;
       try {
-        temperature = (Double) connectedOven.getModelPropertyValue("/properties/temperature");
+        temperature = (Double) connectedOven.getValue("/properties/temperature");
       } catch (Exception e) {
         logger.error("Failed to read temperature", e);
       }
