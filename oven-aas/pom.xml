@@ -25,7 +25,6 @@
 		<dependency>
 			<groupId>org.eclipse.basyx</groupId>
 			<artifactId>basyx.components.lib</artifactId>
-			<version>1.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

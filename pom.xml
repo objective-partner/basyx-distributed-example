@@ -35,12 +35,17 @@
 
 	<properties>
 		<dockerfile-maven-version>1.4.13</dockerfile-maven-version>
-		<fabric8-io-maven-plugin-version>0.33.0</fabric8-io-maven-plugin-version>
+		<fabric8-io-maven-plugin-version>0.39.1</fabric8-io-maven-plugin-version>
 		<application-main-class>please_set_application-main-class_in_pom_properties</application-main-class>
 		<license.licenseName>epl_v2</license.licenseName>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>org.eclipse.basyx</groupId>
+				<artifactId>basyx.components.lib</artifactId>
+				<version>1.0.2</version>
+			</dependency>
 			<dependency>
 				<groupId>info.picocli</groupId>
 				<artifactId>picocli</artifactId>

@@ -1,9 +1,9 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:11-jdk-slim-buster
 
 COPY default_command.sh /application/
 RUN chmod 0755 /application/default_command.sh
 
-RUN mkdir -p /application/lib && addgroup -S basyx && adduser -S basyx -G basyx && chown -R basyx /application
+RUN mkdir -p /application/lib && addgroup --system basyx && adduser --system --ingroup basyx --disabled-password basyx && chown -R basyx /application
 
 USER basyx
 

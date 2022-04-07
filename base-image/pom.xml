@@ -15,8 +15,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.basyx</groupId>
-			<artifactId>basyx.components.lib</artifactId>
-			<version>1.0.0</version>
+    		<artifactId>basyx.components.lib</artifactId>
 		</dependency>
 	</dependencies>
 	<build>
@@ -37,7 +36,6 @@
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-
 				<configuration>
 					<images>
 						<image>
